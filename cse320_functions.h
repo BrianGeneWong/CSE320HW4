@@ -1,0 +1,10 @@
+cse320_malloc(){
+}
+cse320_free(){
+}
+cse320_fopen(){
+}
+cse320_fclose(){
+}
+cse320_clean(){
+}
