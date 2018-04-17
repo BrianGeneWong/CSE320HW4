@@ -6,10 +6,13 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
+
 void printHelp(){
 	printf("You can use the following commands:\n");
 	printf("exit - exit this application\n");
 	printf("run X - execute application X\n");
+	printf("help - print help menu \n");
 
 }
 int main(int argc, char** argv){	
@@ -43,21 +46,23 @@ int main(int argc, char** argv){
 				args[i]=tok;
 				i++;
 			}	
+			signal(SIGINT, SIG_IGN);
 			//block signals then fork	
 			if ((pid=fork())==-1){
 				perror("Fork Error\n");
 				return errno;
 			}
 			if(pid==0){
-				printf("ASDFJASDFKASDFAsdF\n");
+				signal(SIGINT, SIG_DFL);
+			//	printf("ASDFJASDFKASDFAsdF\n");
 				if(execvp(args[0],args)==-1)
 					execv(args[0],args);
 				
 				exit(0);
 			}
 			wait(NULL);
-		
-			
+		        signal(SIGINT, SIG_DFL);	
+						
 		
 		}
 		else{
