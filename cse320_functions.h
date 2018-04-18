@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
-
+#include <stdio.h>
 
 int addr_count=0;
 int file_count=0;
@@ -49,9 +49,28 @@ void* cse320_malloc(size_t size){
 	}
 	return ptr;	
 }
-void cse320_free(){
-
+void cse320_free(void* ptr){
 	//traverse throuugh list
+	int i=0;
+	while(i<25){
+		if(addr_list[i].addr==ptr){
+			if(addr_list[i].ref_count==0){
+				printf("Free: Double free attempt\n");
+				errno=EADDRNOTAVAIL;
+				exit(-1);
+			}	
+			else{
+				free(ptr);
+				addr_list[i].ref_count--;	
+				return;
+			}
+		}
+		i++;
+	}
+	printf("Free: Illegal Address\n");
+	errno=EFAULT;
+	exit(-1);
+	
 }
 void* cse320_fopen(){
 }
