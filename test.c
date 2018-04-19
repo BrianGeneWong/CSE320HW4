@@ -4,7 +4,7 @@
 int main(){
 
 	int i =0;
-	
+	/*
 	init_addr_list();
 	void* a = cse320_malloc(3);
 	void* b = cse320_malloc(4);
@@ -30,7 +30,7 @@ int main(){
 		printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
 		i++;
 	}
-	
+*/	
 
 	return 0;
 }
