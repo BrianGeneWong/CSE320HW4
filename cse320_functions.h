@@ -6,10 +6,11 @@
 #include <string.h>
 int addr_count=0;
 int file_count=0;
+sem_t items;
+pthread_mutex_t lock;
 struct addr_in_use{
 	void* addr;
 	int ref_count;
-	void *nextAddr;
 
 } addr_in_use_default={NULL,0,NULL};
 
@@ -17,7 +18,7 @@ struct addr_in_use{
 struct files_in_use{
 	char* filename;
 	int ref_count;
-	void* nextFile;
+	FILE* fp;
 };
 
 struct addr_in_use addr_list[25];
@@ -89,26 +90,82 @@ void cse320_free(void* ptr){
 	exit(-1);
 	
 }
-FILE* cse320_fopen(const char *pathname, const char *mode){
+FILE* cse320_fopen(char *pathname,char *mode){
 	FILE* fp=NULL;
 	int i =0;
 	if(file_count>=25){
 		errno=ENFILE;
 		exit(-1);
 	}
-	fp=fopen(pathname,mode);
+	if (file_count>=25){
+
+		errno=ENFILE;
+		exit(-1);
+	}
 	while(i<25){
 		//check to see if the file descriptor already exists
 		if(strcmp(file_list[i].filename,pathname)==0){
 			file_list[i].ref_count++;
+			return file_list[i].fp;
+		}
+
+	}
+	//else, find first occurence of ref_count==0
+	i=0;
+	while(i<25){
+		if(file_list[i].ref_count==0){
+			
+			fp=fopen(pathname,mode);
+			file_count++;
+			file_list[i].ref_count++;
+			file_list[i].filename=pathname;
+			file_list[i].fp=fp;
+			i++;
 			return fp;
 		}
 
 	}
-	file_count++;
 	return fp;
 }
-void cse320_fclose(){
+void cse320_fclose(FILE* fp,char* filename){
+	
+	int i=0;
+	while(i<25){
+		if(strcmp(filename,file_list[i].filename)==0){
+			if(file_list[i].ref_count==0){
+				errno=EINVAL;
+				printf("Close: Ref count is zero\n");
+				exit(-1);
+			}
+			else{
+				file_list[i].ref_count--;
+				if(file_list[i].ref_count==0){
+					file_count--;
+					fclose(fp);
+				}
+				return;
+			}
+		}
+		
+		i++;
+	}
+	printf("Close: Illegal filename\n");
+	errno=ENOENT;
+	exit(-1);
 }
 void cse320_clean(){
+	//free malloc stuff first
+	int i =0;
+	while(i<25){
+		if (addr_list[i].ref_count==1){
+
+			free(addr_list[i].addr);
+			addr_list[i].ref_count--;
+		}
+		if (file_list[i].ref_count>0){
+			fclose(file_list[i].fp);
+			file_list[i].ref_count=0;
+		}
+		i++;
+	}
 }
