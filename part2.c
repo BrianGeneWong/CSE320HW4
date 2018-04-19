@@ -42,6 +42,7 @@ void* cse320_malloc(size_t size){
         //iterate through list, find first free one
         int i=0;
         if (addr_count>=25){
+		write(1,"Not enough memory\n",sizeof("Not enough memory\n"));
                 errno=ENOMEM;
                 _exit(-1);
         }
@@ -109,6 +110,7 @@ FILE* cse320_fopen(char *pathname,char *mode){
         FILE* fp=NULL;
         int i =0;
         if(file_count>=25){
+		write(1,"Too many opened files\n",sizeof("Too many opened files\n"));
                 errno=ENFILE;
                 _exit(-1);
         }
@@ -230,27 +232,37 @@ int main(){
         void* a = cse320_malloc(3);
         void* b = cse320_malloc(4);
         void* c = cse320_malloc(5);
-
+        void* d = cse320_malloc(4);
+        void* e = cse320_malloc(4);
+        void* f = cse320_malloc(4);
+        void* g = cse320_malloc(4);
+        void* h = cse320_malloc(4);
+        void* ii = cse320_malloc(4);
+        void* j = cse320_malloc(4);
+        void* k = cse320_malloc(4);
+        void* l = cse320_malloc(4);
+        void* m = cse320_malloc(4);
+        void* n = cse320_malloc(4);
+        void* o = cse320_malloc(4);
+        void* p = cse320_malloc(4);
+        void* q = cse320_malloc(4);
+        void* r = cse320_malloc(4);
+        void* s = cse320_malloc(4);
+        void* t = cse320_malloc(4);
+        void* u = cse320_malloc(4);
+        void* v = cse320_malloc(4);
+        void* w = cse320_malloc(4);
+        void* x = cse320_malloc(4);
+        void* y = cse320_malloc(4);
+        void* z = cse320_malloc(4);
+/*
         printf("a=%p\n",a);
         printf("b=%p\n",b);
         printf("c=%p\n",c);
-        
+  */      
         //print array;
         i =0;
         printf("---------------\n");
-        while(i<25){
-                struct addr_in_use a= addr_list[i];
-                printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
-                i++;
-        }
-        cse320_free(b);
-        printf("---------------\n");
-        i=0;
-        while(i<25){
-                struct addr_in_use a= addr_list[i];
-                printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
-                i++;
-        }		
 
 	cse320_clean();
         i=0;

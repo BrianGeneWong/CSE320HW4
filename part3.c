@@ -21,24 +21,32 @@ void sigalarm_handler(int sig){
 
 void cse320_settimer(int n){
 	secs=n;
-	alarm(secs);
 }
 pid_t cse320_fork(){	
 	pid_t pid;
 	pid=fork();
 	if(pid==-1){
+		perror("Failed fork\n");
 		exit(-1);
 	}
 	if(pid==0){
+		array[i]=pid;
+		i++;
 		return pid;
-	}
-	else{
-		signal(SIGALRM,sigalarm_handler);
-		return pid;
-	}
+	}	
+	alarm(secs);
+	pause();
+	return pid;
+	
 	
 }
 int main(){
-	fork();
+	pid_t pid;
+	signal(SIGALRM,sigalarm_handler);
+	cse320_settimer(3);
+	cse320_fork();
+	cse320_fork();
+	cse320_fork();
+	cse320_fork();
 	return 0;
 }
