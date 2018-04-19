@@ -1,8 +1,6 @@
 #include "cse320_functions.h"
 int addr_count=0;
 int file_count=0;
-sem_t items;
-pthread_mutex_t lock;
 
 struct addr_in_use addr_list[25];
 struct files_in_use file_list[25];
@@ -15,6 +13,9 @@ void init_addr_list(){
                 addr_list[i]=new_block;
                 i++;
         }
+	if(pthread_mutex_init(&addr_lock,NULL)==-2){
+		_exit(-1);
+	}
 }
 
 void init_file_list(){
@@ -27,15 +28,22 @@ void init_file_list(){
                 file_list[i]=new_file;
                 i++;
         }
+
+	if(pthread_mutex_init(&file_lock,NULL)==-2){
+		_exit(-1);
+	}
 }
 void* cse320_malloc(size_t size){
+	if(pthread_mutex_lock(&addr_lock)==-1){
+		_exit(-1);
+	}
         void* ptr=NULL;
         //do stuff with global list
         //iterate through list, find first free one
         int i=0;
         if (addr_count>=25){
                 errno=ENOMEM;
-                exit(-1);
+                _exit(-1);
         }
         while(i<25){
                 if(addr_list[i].ref_count==0){
@@ -47,49 +55,73 @@ void* cse320_malloc(size_t size){
                 }
                 i++;
         }
+	if(pthread_mutex_unlock(&addr_lock)==-1){
+		_exit(-1);
+	}
         return ptr;
 }
 void cse320_free(void* ptr){
         //traverse throuugh list
+	if(addr_count==0){
+	//	printf("Free: Illegal Address\n");
+		write(1,"Free: Illegal Address\n",sizeof("Free: Illegal Address\n"));
+		errno=EFAULT;
+		_exit(-1);
+
+	}
+		
+	if(pthread_mutex_lock(&addr_lock)==-1){
+		_exit(-1);
+	}
         int i=0;
         while(i<25){
                 if(addr_list[i].addr==ptr){
                         if(addr_list[i].ref_count==0){
-                                printf("Free: Double free attempt\n");
+                               // printf("Free: Double free attempt\n");
+				write(1,"Free: Double free attempt\n",sizeof("Free: Double free attempt\n"));
                                 errno=EADDRNOTAVAIL;
                                 exit(-1);
                         }
-                        else{
+                        else{	
                                 free(ptr);
                                 addr_list[i].ref_count--;
                                 addr_count--;
+				if(pthread_mutex_unlock(&addr_lock)==-1){
+					_exit(-1);
+				}
                                 return;
                         }
                 }
                 i++;
         }
-        printf("Free: Illegal Address\n");
+	if(pthread_mutex_unlock(&addr_lock)==-1){
+		_exit(-1);
+	}
+       // printf("Free: Illegal Address\n");
+	write(1,"Free: Illegal Address\n",sizeof("Free: Illegal Address\n"));
         errno=EFAULT;
-        exit(-1);
+        _exit(-1);
        
 }
 
 FILE* cse320_fopen(char *pathname,char *mode){
+
         FILE* fp=NULL;
         int i =0;
         if(file_count>=25){
                 errno=ENFILE;
-                exit(-1);
+                _exit(-1);
         }
-        if (file_count>=25){
-
-                errno=ENFILE;
-                exit(-1);
-        }
+	if(pthread_mutex_lock(&file_lock)==-1){
+		_exit(-1);
+	}
         while(i<25){
                 //check to see if the file descriptor already exists
                 if(strcmp(file_list[i].filename,pathname)==0){
                         file_list[i].ref_count++;
+			if(pthread_mutex_unlock(&file_lock)==-1){
+				_exit(-1);
+			}
                         return file_list[i].fp;
                 }
 
@@ -105,41 +137,71 @@ FILE* cse320_fopen(char *pathname,char *mode){
                         file_list[i].filename=pathname;
                         file_list[i].fp=fp;
                         i++;
+			if(pthread_mutex_unlock(&file_lock)==-1){
+				_exit(-1);
+			}
                         return fp;
                 }
 
         }
+	if(pthread_mutex_unlock(&file_lock)==-1){
+		_exit(-1);
+	}
         return fp;
 }
-void cse320_fclose(FILE* fp){
+int cse320_fclose(FILE* fp){
        
+	if(pthread_mutex_lock(&file_lock)==-1){
+		_exit(-1);
+	}
         int i=0;
         while(i<25){
                 if(fp=file_list[i].fp){
                         if(file_list[i].ref_count==0){
+		
                                 errno=EINVAL;
-                                printf("Close: Ref count is zero\n");
+                               // printf("Close: Ref count is zero\n");
+				write(1,"Close: Ref count is zero\n",sizeof("Close: Ref count is zero\n"));
+				if(pthread_mutex_lock(&file_lock)==-1){
+					_exit(-1);
+				}
                                 exit(-1);
                         }
                         else{
                                 file_list[i].ref_count--;
                                 if(file_list[i].ref_count==0){
                                         file_count--;
-                                        fclose(fp);
+                       			if (file_list[i].fp!=NULL)
+                                        	return fclose(fp);
                                 }
-                                return;
+			if(pthread_mutex_unlock(&file_lock)==-1){
+				_exit(-1);
+			}
+                                return 0;
                         }
                 }
        
                 i++;
         }
-        printf("Close: Illegal filename\n");
+	if(pthread_mutex_unlock(&file_lock)==-1){
+		_exit(-1);
+	}
+       // printf("Close: Illegal filename\n");
+	write(1,"Close: Illegal filename\n",sizeof("Close: Illegal filename\n"));
         errno=ENOENT;
-        exit(-1);
+        _exit(-1);
 }
 
 void cse320_clean(){
         //free malloc stuff first
+	
+	if(pthread_mutex_lock(&addr_lock)==-1){
+		_exit(-1);
+	}
+	if(pthread_mutex_lock(&file_lock)==-1){
+		_exit(-1);
+	}
+
         int i =0;
         while(i<25){
                 if (addr_list[i].ref_count==1){
@@ -148,17 +210,54 @@ void cse320_clean(){
                         addr_list[i].ref_count--;
                 }
                 if (file_list[i].ref_count>0){
-                        fclose(file_list[i].fp);
+                        if (file_list[i].fp!=NULL)
+				fclose(file_list[i].fp);
                         file_list[i].ref_count=0;
                 }
                 i++;
         }
+	if(pthread_mutex_unlock(&file_lock)==-1){
+		_exit(-1);
+	}
 }
 
 
 
 int main(){
+	init_file_list();
+	init_addr_list();
+	int i;
+        void* a = cse320_malloc(3);
+        void* b = cse320_malloc(4);
+        void* c = cse320_malloc(5);
 
+        printf("a=%p\n",a);
+        printf("b=%p\n",b);
+        printf("c=%p\n",c);
+        
+        //print array;
+        i =0;
+        printf("---------------\n");
+        while(i<25){
+                struct addr_in_use a= addr_list[i];
+                printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
+                i++;
+        }
+        cse320_free(b);
+        printf("---------------\n");
+        i=0;
+        while(i<25){
+                struct addr_in_use a= addr_list[i];
+                printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
+                i++;
+        }		
 
+	cse320_clean();
+        i=0;
+        while(i<25){
+                struct addr_in_use a= addr_list[i];
+                printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
+                i++;
+        }		
 	return 0;
 }

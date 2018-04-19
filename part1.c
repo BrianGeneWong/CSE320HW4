@@ -55,8 +55,11 @@ int main(int argc, char** argv){
 			if(pid==0){
 				signal(SIGINT, SIG_DFL);
 			//	printf("ASDFJASDFKASDFAsdF\n");
-				if(execvp(args[0],args)==-1)
-					execv(args[0],args);
+				if(execvp(args[0],args)==-1){
+					if(execv(args[0],args)==-1)
+						exit(-1);
+
+				}
 				
 				exit(0);
 			}
