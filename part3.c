@@ -11,7 +11,7 @@ void sigalarm_handler(int sig){
 	int oldErrno=errno;
 	int j=0;
 	//REAP ZOMBIE CHILDREN IN HERE	
-	for(j=0;i<i;j++){
+	for(j;j<i;j++){
 		waitpid(array[j],&child_status,0);
 	}
 	i=0;
@@ -21,32 +21,39 @@ void sigalarm_handler(int sig){
 
 void cse320_settimer(int n){
 	secs=n;
+	alarm(secs);
 }
 pid_t cse320_fork(){	
 	pid_t pid;
+	signal(SIGALRM,sigalarm_handler);
 	pid=fork();
 	if(pid==-1){
 		perror("Failed fork\n");
 		exit(-1);
 	}
 	if(pid==0){
-		array[i]=pid;
-		i++;
 		return pid;
 	}	
-	alarm(secs);
-	pause();
+	array[i]=pid;
+	i++;
+//	alarm(secs);
 	return pid;
 	
 	
 }
 int main(){
 	pid_t pid;
-	signal(SIGALRM,sigalarm_handler);
-	cse320_settimer(3);
-	cse320_fork();
-	cse320_fork();
-	cse320_fork();
-	cse320_fork();
+	char* arg[2]={"ls",NULL};
+	cse320_settimer(7);
+	if((pid=cse320_fork())==0){
+		execvp("ls",arg);
+	}
+	if((pid=cse320_fork())==0){
+		execvp("ls",arg);
+	}
+	if((pid=cse320_fork())==0){
+		execvp("ls",arg);
+	}
+	sleep(10);
 	return 0;
 }
