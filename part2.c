@@ -119,14 +119,17 @@ FILE* cse320_fopen(char *pathname,char *mode){
 	}
         while(i<25){
                 //check to see if the file descriptor already exists
-                if(strcmp(file_list[i].filename,pathname)==0){
+		if(file_list[i].filename==NULL){
+			//if its null, just go to the next one
+		}
+                else if(strcmp(file_list[i].filename,pathname)==0){
                         file_list[i].ref_count++;
 			if(pthread_mutex_unlock(&file_lock)==-1){
 				_exit(-1);
 			}
                         return file_list[i].fp;
                 }
-
+		i++;
         }
         //else, find first occurence of ref_count==0
         i=0;
@@ -138,13 +141,13 @@ FILE* cse320_fopen(char *pathname,char *mode){
                         file_list[i].ref_count++;
                         file_list[i].filename=pathname;
                         file_list[i].fp=fp;
-                        i++;
 			if(pthread_mutex_unlock(&file_lock)==-1){
 				_exit(-1);
 			}
                         return fp;
                 }
 
+                        i++;
         }
 	if(pthread_mutex_unlock(&file_lock)==-1){
 		_exit(-1);
@@ -229,32 +232,12 @@ int main(){
 	init_file_list();
 	init_addr_list();
 	int i;
-        void* a = cse320_malloc(3);
-        void* b = cse320_malloc(4);
-        void* c = cse320_malloc(5);
-        void* d = cse320_malloc(4);
-        void* e = cse320_malloc(4);
-        void* f = cse320_malloc(4);
-        void* g = cse320_malloc(4);
-        void* h = cse320_malloc(4);
-        void* ii = cse320_malloc(4);
-        void* j = cse320_malloc(4);
-        void* k = cse320_malloc(4);
-        void* l = cse320_malloc(4);
-        void* m = cse320_malloc(4);
-        void* n = cse320_malloc(4);
-        void* o = cse320_malloc(4);
-        void* p = cse320_malloc(4);
-        void* q = cse320_malloc(4);
-        void* r = cse320_malloc(4);
-        void* s = cse320_malloc(4);
-        void* t = cse320_malloc(4);
-        void* u = cse320_malloc(4);
-        void* v = cse320_malloc(4);
-        void* w = cse320_malloc(4);
-        void* x = cse320_malloc(4);
-        void* y = cse320_malloc(4);
-        void* z = cse320_malloc(4);
+	printf("IN MaIN\n");
+	FILE* fp=cse320_fopen("test.c","r");
+	FILE* f=cse320_fopen("test.c","r");
+	FILE* p=cse320_fopen("test.c","r");
+	FILE* fp1=cse320_fopen("t","r");
+	cse320_fclose(f);	
 /*
         printf("a=%p\n",a);
         printf("b=%p\n",b);
@@ -264,12 +247,12 @@ int main(){
         i =0;
         printf("---------------\n");
 
-	cse320_clean();
         i=0;
         while(i<25){
-                struct addr_in_use a= addr_list[i];
-                printf("addr_list[%d],ptr=%p, ref_count=%d \n",i,a.addr,a.ref_count);
+                struct files_in_use a= file_list[i];
+                printf("file_list[%d],ptr=%p, ref_count=%d fp=%p\n",i,a.filename,a.ref_count,a.fp);
                 i++;
         }		
+	cse320_clean();
 	return 0;
 }
