@@ -19,7 +19,7 @@ int main(int argc, char** argv){
 	printHelp();
 	while(1){
 		pid_t pid;
-		char* args[6]={NULL,NULL,NULL,NULL,NULL,NULL};
+		char* args[7]={NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 		char* command=malloc(255);
 		printf("Input Command: ");
 		fgets(command,255,stdin);

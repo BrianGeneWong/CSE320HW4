@@ -3,7 +3,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-pid_t array[255];
+pid_t array[200];
 int i=0;
 int secs=0;
 int child_status;

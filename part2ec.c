@@ -1,41 +1,70 @@
+#include "cse320_functions.h"
+addr_node* head=NULL;
+
+
+
 void init_addr_list(){
-        int i=0;
-        while(i<25){
-                struct addr_in_use new_block;
-                new_block.addr=NULL;
-                new_block.ref_count=0;
-                addr_list[i]=new_block;
-                i++;
-        }
         if(sem_init(&addr_items,0,0)==-1){
                 _exit(-1);
         }
-        if(sem_init(&addr_slots,0,25)==-1){
-                _exit(-1);
-        }
-        if(pthread_mutex_init(&addr_lock,NULL)==-2){
+        if(pthread_mutex_init(&addr_lock,NULL)==-1){
                 _exit(-1);
         }
 }
 
-void init_file_list(){
-        int i=0;
-        while(i<25){
-                struct files_in_use new_file;
-                new_file.filename=NULL;
-                new_file.ref_count=0;
-                new_file.fp=NULL;
-                file_list[i]=new_file;
-                i++;
-        }
+void* cse320_malloc(size_t size){
+	void* addr= malloc(size);
+	struct addr_in_use* addr_use=malloc(sizeof(struct addr_in_use));
+	addr_node *new_node= malloc(sizeof(addr_node));
+	addr_use->addr=addr;
+	addr_use->ref_count++;
+	new_node->node=addr_use;
+	new_node->next=NULL;
+	if(head==NULL){
+		head=new_node;
+		head->prev=NULL;
+	}
+	else{
+		addr_node* temp=head;
+		while(temp->next!=NULL)
+			temp=temp->next;
+		temp->next=new_node;
+		new_node->prev=temp;
+	}
 
-        if(sem_init(&file_items,0,0)==-1){
-                _exit(-1);
-        }
-        if(sem_init(&file_slots,0,25)==-1){
-                _exit(-1);
-        }
-        if(pthread_mutex_init(&file_lock,NULL)==-2){
-                _exit(-1);
-        }
+}
+
+void cse320_free(void* ptr){
+	if(head==NULL){
+		write(1,"Free: Illegal address\n",sizeof("Free: Illegal address\n"));
+		errno=EFAULT;
+		exit(-1);
+	}
+	else{
+		addr_node* temp=head;
+		while(temp!=NULL){
+			if(temp->node->addr==ptr){
+				if(temp->node->ref_count==0){
+					write(1,"Free: Double free attempt\n",sizeof("Free: Double free attempt\n"));
+					exit(-1);
+				}
+				if(temp==head){
+
+				
+				}
+				else{
+
+
+				}
+			}
+			temp=temp->next;
+		}
+
+	}
+
+}
+int main(){
+
+
+	return 0;
 }
