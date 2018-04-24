@@ -134,8 +134,7 @@ FILE* cse320_fopen(char *pathname,char *mode){
         //else, find first occurence of ref_count==0
         i=0;
         while(i<25){
-                if(file_list[i].ref_count==0){
-       
+                if(file_list[i].ref_count==0){ 
                         fp=fopen(pathname,mode);
                         file_count++;
                         file_list[i].ref_count++;
@@ -161,7 +160,7 @@ int cse320_fclose(FILE* fp){
 	}
         int i=0;
         while(i<25){
-                if(fp=file_list[i].fp){
+                if(fp==file_list[i].fp){
                         if(file_list[i].ref_count==0){
 		
                                 errno=EINVAL;
@@ -238,11 +237,12 @@ int main(){
 	printf("IN MaIN\n");
 	FILE* fp=cse320_fopen("test.c","r");
 	FILE* f=cse320_fopen("test.c","r");
-	FILE* p=cse320_fopen("test.c","r");
+//	FILE* p=cse320_fopen("test.c","r");
 	FILE* fp1=cse320_fopen("t","r");
-	printf("fp=%p p=%p\n",fp,p);
-	cse320_fclose(f);	
+	printf("fp=%p p=%p\n",fp,fp1);
+	cse320_fclose(fp);	
 	cse320_fclose(fp1);	
+//	cse320_fclose(fp1);	
 /*
         printf("a=%p\n",a);
         printf("b=%p\n",b);
