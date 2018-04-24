@@ -177,7 +177,7 @@ int cse320_fclose(FILE* fp){
                                 if(file_list[i].ref_count==0){
                                         file_count--;
                        			if (file_list[i].fp!=NULL)
-                                        	return fclose(fp);
+                                        	fclose(fp);
                                 }
 			if(pthread_mutex_unlock(&file_lock)==-1){
 				_exit(-1);
@@ -240,7 +240,9 @@ int main(){
 	FILE* f=cse320_fopen("test.c","r");
 	FILE* p=cse320_fopen("test.c","r");
 	FILE* fp1=cse320_fopen("t","r");
+	printf("fp=%p p=%p\n",fp,p);
 	cse320_fclose(f);	
+	cse320_fclose(fp1);	
 /*
         printf("a=%p\n",a);
         printf("b=%p\n",b);
