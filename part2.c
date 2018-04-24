@@ -224,6 +224,9 @@ void cse320_clean(){
 	if(pthread_mutex_unlock(&file_lock)==-1){
 		_exit(-1);
 	}
+	if(pthread_mutex_unlock(&addr_lock)==-1){
+		_exit(-1);
+	}
 }
 
 
