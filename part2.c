@@ -136,6 +136,12 @@ FILE* cse320_fopen(char *pathname,char *mode){
         while(i<25){
                 if(file_list[i].ref_count==0){ 
                         fp=fopen(pathname,mode);
+			if(fp==NULL){
+				if(pthread_mutex_unlock(&file_lock)==-1){
+					_exit(-1);
+				}
+				return fp;
+			}
                         file_count++;
                         file_list[i].ref_count++;
                         file_list[i].filename=pathname;
@@ -240,9 +246,8 @@ int main(){
 //	FILE* p=cse320_fopen("test.c","r");
 	FILE* fp1=cse320_fopen("t","r");
 	printf("fp=%p p=%p\n",fp,fp1);
-	cse320_fclose(fp);	
-	cse320_fclose(fp1);	
-//	cse320_fclose(fp1);	
+//	cse320_fclose(fp);	
+//	cse320_fclose(fp1);
 /*
         printf("a=%p\n",a);
         printf("b=%p\n",b);

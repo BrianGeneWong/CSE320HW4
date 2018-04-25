@@ -27,6 +27,8 @@ If they both failed, that means the user did not give a valid appplication, so I
 Part2
 For the most part, I followed the homework documentation when creating cse320_functions.h.
 I added extra declarations for sempahores and mutexes, one of each for each array.
+There is a main function in part2.c, please do not include in other files.
+main() was simply to test my code and to get rid of compiler errors.
 For struct files_in_use, I added an extra field for a FILE* since our fopen implementation
 requires us to return the same file descriptor if we open the same file twice.
 
@@ -60,6 +62,7 @@ The arguments and return type are the same as fopen(). If the file count is grea
 We iterate through file_list and if we can find a file_in_use with a matching name, we return that file_in_use.fp.
 Else, we iterate through the array again and find the first occurence of ref_count==0. Then we fopen(pathname) and
 store both pathname and the returned filepointer in that index of the array.
+If the filepointer is NULL however, do not store anything in the array. Simply return the null pointer.
 
 int cse320_fclose(FILE*fp)
 The arguments and return type are the same as fclose(). We simply search file_list for a file_in_use struct that
@@ -73,6 +76,8 @@ than 0 at index i for their respective lists, call fclose() or free() appropriat
 
 Part3
 Functions are defined in part3.c
+There is a main function in part3.c, please do not include in other files.
+main() was simply to test my code and to get rid of compiler errors.
 For part3, please call cse320_settimer before calling cse320_fork().
 We will keep our pids in an array so that every n seconds, we can iterate through the array and waitpid()
 everything insde.
